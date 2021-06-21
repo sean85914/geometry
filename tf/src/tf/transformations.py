@@ -1096,6 +1096,15 @@ def euler_from_quaternion(quaternion, axes='sxyz'):
     """
     return euler_from_matrix(quaternion_matrix(quaternion), axes)
 
+def euler_from_rotvec(vec, axes='sxyz'):
+    """Return Euler angles from rotation vector for specified axis sequence.
+
+    >>> angles = euler_from_rotvec([1.2091995761561452, -1.2091995761561452, 1.2091995761561452], axes='rxyz')
+    >>> numpy.allclose(angles, [1.5707963267948968, 0.0, 1.5707963267948968])
+    True
+
+    """
+    return euler_from_matrix(rotvec_matrix(vec), axes)
 
 def quaternion_from_euler(ai, aj, ak, axes='sxyz'):
     """Return quaternion from Euler angles and axis sequence.
@@ -1192,6 +1201,37 @@ def quaternion_matrix(quaternion):
         (                0.0,                 0.0,                 0.0, 1.0)
         ), dtype=numpy.float64)
 
+def quaternion_from_rotvec(vec):
+    """Return quaternion from rotation vector.
+
+    >>> v = [1.2091995761561452, -1.2091995761561452, 1.2091995761561452]
+    >>> q = quaternion_from_rotvec(v)
+    >>> numpy.allclose(q, [0.5, -0.5, 0.5, 0.5])
+    True
+
+    """
+    q = numpy.zeros((4, ), dtype=numpy.float64)
+    if vector_norm(vec) < _EPS:
+        q[3] = 1.
+    else:
+        u = unit_vector(vec)
+        theta = vector_norm(vec)
+        s = numpy.sin(theta/2)
+        for i in range(3):
+            q[i] = u[i]*s
+        q[3] = numpy.cos(theta/2)
+    return q
+
+def rotvec_matrix(vec):
+    """Return homogeneous rotation matrix from rotation vector.
+
+    >>> v = [1.2091995761561452, -1.2091995761561452, 1.2091995761561452]
+    >>> R = rotvec_matrix(v)
+    >>> numpy.allclose(R, rotation_matrix(2.0943951, (0.5773503, -0.5773503, 0.5773503)))
+    True
+
+    """
+    return quaternion_matrix(quaternion_from_rotvec(vec))
 
 def quaternion_from_matrix(matrix):
     """Return quaternion from rotation matrix.
