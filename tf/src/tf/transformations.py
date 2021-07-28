@@ -1264,6 +1264,44 @@ def quaternion_from_matrix(matrix):
     q *= 0.5 / math.sqrt(t * M[3, 3])
     return q
 
+def quaternion_from_axisAngle(axisAngle):
+    """Convert axis-angle representation to quaternion.
+
+    >>> q = quaternion_from_axisAngle([0, 1, 0, numpy.pi])
+    >>> numpy.allclose(q, [0, 1, 0, 0])
+    True
+
+    """
+    if axisAngle[3] < _EPS:
+        return [0.0, 0.0, 0.0, 1.0]
+    vec = axisAngle[:3]
+    # Check if axis is unit vector 
+    norm_ = vector_norm(vec)
+    if abs(norm_-1) > _EPS:
+        vec = unit_vector(vec)
+    angle = axisAngle[3]
+    quat = [0.0]*4
+    for i in range(3):
+        quat[i] = vec[i]*math.sin(angle/2)
+    quat[3] = math.cos(angle/2)
+    return quat
+
+def axisAngle_from_quaternion(quaternion):
+    """Convert quaternion representation to axis-angle
+
+    >>> axisAngle = axisAngle_from_quaternion([0.5, 0.5, -0.5, 0.5])
+    >>> numpy.allclose(axisAngle, [0.5773503, 0.5773503, -0.5773503, 2.0943951])
+    True
+    """
+    axisAngle = [1.0, 0.0, 0.0, 0.0]
+    _vec = [quaternion[0], quaternion[1], quaternion[2]]
+    _norm = vector_norm(_vec)
+    if _norm < 1e-3:
+        return axisAngle
+    for i in range(3):
+        axisAngle[i] = quaternion[i]/_norm
+    axisAngle[3] = 2*numpy.arctan2(_norm, quaternion[3])
+    return axisAngle
 
 def quaternion_multiply(quaternion1, quaternion0):
     """Return multiplication of two quaternions.
