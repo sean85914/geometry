@@ -1179,6 +1179,18 @@ def quaternion_about_axis(angle, axis):
     quaternion[3] = math.cos(angle/2.0)
     return quaternion
 
+def quaternion_rotvec(quaternion):
+    """Return rotation vector from quaternion.
+
+    >>> q = [0.5, 0.5, 0.5, 0.5]
+    >>> quaternion_rotvec(q)
+    [1.2091995761561454, 1.2091995761561454, 1.2091995761561454]
+    """
+    axisAngle = axisAngle_from_quaternion(quaternion)
+    rotvec = [0.0]*3
+    for i in range(3):
+        rotvec[i] = axisAngle[i]*axisAngle[3]
+    return rotvec
 
 def quaternion_matrix(quaternion):
     """Return homogeneous rotation matrix from quaternion.
